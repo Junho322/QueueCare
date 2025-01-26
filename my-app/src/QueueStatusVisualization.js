@@ -1,75 +1,64 @@
 import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { format, parseISO } from "date-fns"; // Import date-fns
+import { format, parseISO } from "date-fns";
 
 const QueueStatusVisualization = ({ queueData }) => {
-  // Safely extract data with default values
-  const globalPosition = queueData?.queue_position?.global || 0;
-  const totalQueue = globalPosition + 10; // Example: Assume total queue size
-  const categoryPosition = queueData?.queue_position?.category || 0;
-  const timeElapsed = queueData?.time_elapsed || 0;
+ const globalPosition = queueData?.queue_position?.global || 0;
+ const totalQueue = globalPosition + 10;
+ const waitingProgress = Math.min(100, Math.round((globalPosition / totalQueue) * 100));
 
-  // Format the arrival time
-  const arrivalTime = queueData?.arrival_time
-    ? format(parseISO(queueData.arrival_time), "PPpp") // e.g., Jan 25, 2025, 9:33 PM
-    : "N/A";
+ const arrivalTime = queueData?.arrival_time
+   ? format(parseISO(queueData.arrival_time), "PPpp")
+   : "N/A";
 
-  // Transform data for bar chart
-  const chartData = [
-    { name: "Global Position", value: globalPosition },
-    { name: "Total Queue", value: totalQueue },
-  ];
+ return (
+   <div className="queue-visualization-container">
+     <div className="queue-info-box">
+       <div className="queue-details-grid">
+         <div className="queue-detail">
+           <strong>Patient ID:</strong> {queueData?.id || "N/A"}
+         </div>
+         <div className="queue-detail">
+           <strong>Arrival Time:</strong> {arrivalTime}
+         </div>
+         <div className="queue-detail">
+           <strong>Triage Category:</strong> {queueData?.triage_category || "N/A"}
+         </div>
+         <div className="queue-detail">
+           <strong>Current Status:</strong> {queueData?.status?.current_phase || "N/A"}
+         </div>
+       </div>
 
-  return (
-    <div className="queue-visualization-container">
-      <div className="queue-info-box">
-        <div className="queue-details-grid">
-          <div className="queue-detail">
-            <strong>Patient ID:</strong> {queueData?.id || "N/A"}
-          </div>
-          <div className="queue-detail">
-            <strong>Arrival Time:</strong> {arrivalTime}
-          </div>
-          <div className="queue-detail">
-            <strong>Triage Category:</strong> {queueData?.triage_category || "N/A"}
-          </div>
-          <div className="queue-detail">
-            <strong>Current Status:</strong> {queueData?.status?.current_phase || "N/A"}
-          </div>
-          <div className="queue-detail">
-            <strong>Time Elapsed:</strong> {timeElapsed} minutes
-          </div>
-        </div>
+       <div style={{ 
+         width: '100%', 
+         backgroundColor: '#e0e0e0', 
+         borderRadius: '10px', 
+         height: '20px', 
+         marginTop: '15px' 
+       }}>
+         <div style={{
+           width: `${waitingProgress}%`,
+           height: '100%',
+           backgroundColor: '#007bff',
+           borderRadius: '10px',
+           transition: 'width 0.5s ease'
+         }} />
+       </div>
+       <div style={{ textAlign: 'center', marginTop: '10px' }}>
+         <strong>Queue Position:</strong> {globalPosition} / {totalQueue} 
+         <span style={{ marginLeft: '10px' }}>({waitingProgress}%)</span>
+       </div>
 
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value" fill="#007bff" />
-          </BarChart>
-        </ResponsiveContainer>
-
-        <div className="investigation-status">
-          <div className="investigation-detail">
-            <strong>Imaging:</strong> {queueData?.status?.investigations?.imaging || "Pending"}
-          </div>
-          <div className="investigation-detail">
-            <strong>Lab Tests:</strong> {queueData?.status?.investigations?.labs || "Pending"}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+       <div className="investigation-status">
+         <div className="investigation-detail">
+           <strong>Imaging:</strong> {queueData?.status?.investigations?.imaging || "Pending"}
+         </div>
+         <div className="investigation-detail">
+           <strong>Lab Tests:</strong> {queueData?.status?.investigations?.labs || "Pending"}
+         </div>
+       </div>
+     </div>
+   </div>
+ );
 };
 
 export default QueueStatusVisualization;
