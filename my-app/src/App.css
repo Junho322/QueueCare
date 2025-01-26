@@ -1,15 +1,15 @@
 /* Mobile-First Responsive Stylesheet */
 :root {
-  --primary-color: #007bff;
-  --secondary-color: #28a745;
-  --background-light: #f4f7f6;
+  --primary-color: #6A80B9;
+  --secondary-color: #155E95;
+  --background-light: #E8F9FF;
   --text-color: #333;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*{
+box-sizing: border-box;
+margin: 0;
+padding: 0;
 }
 
 body {
@@ -70,8 +70,7 @@ body {
 .user-id-form button:active {
   transform: scale(0.98);
 }
-
-/* Queue Status Styles */
+/* Queue Status Styles /
 .queue-status {
   background-color: white;
   border-radius: 12px;
@@ -94,7 +93,7 @@ body {
   text-align: center;
 }
 
-/* Symptoms Section Styles */
+/ Symptoms Section Styles */
 .symptoms-container {
   margin-top: 20px;
 }
@@ -113,6 +112,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   background-color: white;
+  margin-top: 10px;
 }
 
 .symptom-box:hover {
@@ -139,7 +139,7 @@ body {
   transition: background-color 0.3s ease, transform 0.1s;
 }
 
-.changeID {
+.changeID-button {
   background-color: red;
 }
 
@@ -147,72 +147,4 @@ body {
 
 .submit-button:active {
   transform: scale(0.98);
-}
-
-/* Responsive Typography */
-@media (max-width: 480px) {
-  body {
-    font-size: 14px;
-  }
-
-  .user-id-form input,
-  .symptom-box,
-  .submit-button {
-    font-size: 14px;
-    padding: 10px;
-  }
-}
-
-/* High Contrast & Accessibility */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #e0e0e0;
-  }
-
-  .user-id-form,
-  .queue-status,
-  .symptom-box {
-    background-color: #1e1e1e;
-    border-color: #333;
-  }
-
-  /* ...Your existing CSS... */
-
-  .queue-visualization-container {
-    margin-bottom: 20px;
-  }
-  
-  .queue-info-box {
-    padding: 20px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-  }
-  
-  .queue-details-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .investigation-status {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  
-  .investigation-detail {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    text-align: center;
-  }
-  
-
 }

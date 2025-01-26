@@ -89,6 +89,8 @@ const App = () => {
     };
 
     try {
+      console.log("Payload sent to backend:", payload);
+
       const response = await axios.post(
         "http://localhost:8000/education/gumloop",
         payload
@@ -120,20 +122,29 @@ const App = () => {
         </div>
       )}
 
-      {isUserIdSubmitted && queueData && (
+{isUserIdSubmitted && queueData && (
         <div className="queue-status">
           <div
-            className="queue-header flex items-center justify-between w-full mb-6"
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
           >
-            <h2 className="text-2xl font-bold">Queue Status & Information</h2>
+            <h2>Queue Status & Information</h2>
             <button
               onClick={handleReset}
-              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+              style={{
+                backgroundColor: "#155E95", // Red background
+                color: "white", // White text
+                padding: "10px 15px", // Smaller padding
+                borderRadius: "5px", // Rounded corners
+                fontSize: "0.8rem", // Small font
+                border: "none", // Remove border
+                outline: "none", // Remove focus outline
+                fontFamily: "inherit", // Use the default font
+              }}
             >
               Change ID
             </button>
           </div>
+
 
           <QueueStatusVisualization queueData={queueData} />
 

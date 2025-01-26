@@ -7,8 +7,8 @@ import httpx
 router = APIRouter()
 
 class SymptomInput(BaseModel):
-    symptom_input: Optional[str] = "no input was given. don't answer"
-    patient_id: Optional[str]  # Add patient_id as an optional input
+    question_input: str = "no input was given. don't answer"
+    patient_id: Optional[str]  # patient_id is optional but expected
 
 
 @router.post("/gumloop")
@@ -17,6 +17,7 @@ async def generate_education_gumloop(symptom_data: SymptomInput):
     Receives symptom input and patient ID, starts a Gumloop pipeline, polls for the result,
     and returns the final outputs when the pipeline is complete.
     """
+    print("Received symptom_data:", symptom_data.dict())
     # Gumloop API endpoints
     start_pipeline_url = "https://api.gumloop.com/api/v1/start_pipeline"
     poll_run_url = "https://api.gumloop.com/api/v1/get_pl_run"
@@ -40,7 +41,7 @@ async def generate_education_gumloop(symptom_data: SymptomInput):
                 "user_id": "nNT0CHmkWLaXOcu1pYJJ9TRiUQl1",
                 "saved_item_id": "phkmt24rSRMMWDorzJSsSt",
                 "pipeline_inputs": [
-                    {"input_name": "symptom_input", "value": symptom_data.symptom_input},
+                    {"input_name": "question_input", "value": symptom_data.question_input},
                     {"input_name": "patient_id", "value": symptom_data.patient_id or "no patient_id provided"},
                 ]
             },
