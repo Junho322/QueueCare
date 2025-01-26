@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import requests
-import time
+import asyncio
 from typing import Optional
+import httpx
 
 router = APIRouter()
 
@@ -12,7 +12,7 @@ class SymptomInput(BaseModel):
 
 
 @router.post("/gumloop")
-def generate_education_gumloop(symptom_data: SymptomInput):
+async def generate_education_gumloop(symptom_data: SymptomInput):
     """
     Receives symptom input and patient ID, starts a Gumloop pipeline, polls for the result,
     and returns the final outputs when the pipeline is complete.
@@ -28,75 +28,77 @@ def generate_education_gumloop(symptom_data: SymptomInput):
         "Content-Type": "application/json"
     }
 
-    # Step 1: Validate and fetch patient details if patient_id is provided
-    if symptom_data.patient_id:
-        try:
-            patient_url = f"{patient_details_url}/{symptom_data.patient_id}"
-            patient_response = requests.get(patient_url, headers=headers)
-            patient_response.raise_for_status()
-            patient_details = patient_response.json()
-        except requests.exceptions.RequestException as e:
-            raise HTTPException(status_code=500, detail=f"Error fetching patient details: {e}")
-    else:
-        patient_details = {"message": "No patient_id provided."}
-
-    # Step 2: Start the pipeline
-    payload = {
-        "user_id": "nNT0CHmkWLaXOcu1pYJJ9TRiUQl1",
-        "saved_item_id": "phkmt24rSRMMWDorzJSsSt",
-        "pipeline_inputs": [
-            {
-                "input_name": "symptom_input",
-                "value": symptom_data.symptom_input
+    async with httpx.AsyncClient() as client:
+        # Prepare tasks for parallel execution
+        patient_details_task = (
+            client.get(f"{patient_details_url}/{symptom_data.patient_id}", headers=headers)
+            if symptom_data.patient_id else None
+        )
+        start_pipeline_task = client.post(
+            start_pipeline_url,
+            json={
+                "user_id": "nNT0CHmkWLaXOcu1pYJJ9TRiUQl1",
+                "saved_item_id": "phkmt24rSRMMWDorzJSsSt",
+                "pipeline_inputs": [
+                    {"input_name": "symptom_input", "value": symptom_data.symptom_input},
+                    {"input_name": "patient_id", "value": symptom_data.patient_id or "no patient_id provided"},
+                ]
             },
-            {
-                "input_name": "patient_id",
-                "value": symptom_data.patient_id or "no patient_id provided"
-            }
-        ]
-    }
+            headers=headers
+        )
 
-    try:
-        # Start the pipeline
-        start_response = requests.post(start_pipeline_url, json=payload, headers=headers)
-        start_response.raise_for_status()
-        pipeline_data = start_response.json()
+        # Execute tasks concurrently
+        try:
+            responses = await asyncio.gather(
+                patient_details_task,
+                start_pipeline_task,
+                return_exceptions=True
+            )
 
-        # Extract the run_id and URL
-        run_id = pipeline_data.get("run_id")
-        if not run_id:
-            raise HTTPException(status_code=500, detail="No run_id provided in the pipeline response.")
+            # Process patient details response
+            if symptom_data.patient_id:
+                patient_response = responses[0]
+                if isinstance(patient_response, httpx.Response):
+                    patient_response.raise_for_status()
+                    patient_details = patient_response.json()
+                else:
+                    raise HTTPException(status_code=500, detail="Error fetching patient details.")
+            else:
+                patient_details = {"message": "No patient_id provided."}
 
-        # Step 3: Poll for the result
-        poll_params = {
-            "run_id": run_id,
-            "user_id": "nNT0CHmkWLaXOcu1pYJJ9TRiUQl1"
-        }
+            # Process start pipeline response
+            start_response = responses[1]
+            if isinstance(start_response, httpx.Response):
+                start_response.raise_for_status()
+                pipeline_data = start_response.json()
+            else:
+                raise HTTPException(status_code=500, detail="Error starting the pipeline.")
 
-        for _ in range(20):  # Poll up to 20 times
-            poll_response = requests.get(poll_run_url, headers=headers, params=poll_params)
-            poll_response.raise_for_status()
-            run_status = poll_response.json()
+            # Extract run_id and proceed to polling
+            run_id = pipeline_data.get("run_id")
+            if not run_id:
+                raise HTTPException(status_code=500, detail="No run_id provided in the pipeline response.")
 
-            # Extract the state and outputs
-            state = run_status.get("state")
-            if state == "DONE":
-                outputs = run_status.get("outputs", {})
-                return {
-                    "initial_response": pipeline_data,
-                    "patient_details": patient_details,
-                    "final_outputs": outputs
-                }
-            elif state in {"FAILED", "TERMINATED"}:
-                raise HTTPException(status_code=500, detail=f"Pipeline ended with state: {state}")
+            poll_params = {"run_id": run_id, "user_id": "nNT0CHmkWLaXOcu1pYJJ9TRiUQl1"}
+            for _ in range(20):  # Poll up to 10 times
+                poll_response = await client.get(poll_run_url, headers=headers, params=poll_params)
+                poll_response.raise_for_status()
+                run_status = poll_response.json()
 
-            # Wait 2 seconds before the next poll
-            time.sleep(2)
+                state = run_status.get("state")
+                if state == "DONE":
+                    outputs = run_status.get("outputs", {})
+                    return {
+                        "initial_response": pipeline_data,
+                        "patient_details": patient_details,
+                        "final_outputs": outputs
+                    }
+                elif state in {"FAILED", "TERMINATED"}:
+                    raise HTTPException(status_code=500, detail=f"Pipeline ended with state: {state}")
 
-        # If the pipeline does not complete within the polling attempts
-        raise HTTPException(status_code=500, detail="Pipeline did not complete in time.")
+                await asyncio.sleep(0.5)
 
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"API request error: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+            raise HTTPException(status_code=500, detail="Pipeline did not complete in time.")
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error during processing: {e}")

@@ -65,9 +65,28 @@ const App = () => {
     );
   };
 
-  const handleFinalSubmit = () => {
-    console.log("Selected Boxes:", selectedBoxIds);
-    alert(`You have selected the following boxes: ${JSON.stringify(selectedBoxIds)}`);
+  const handleFinalSubmit = async () => {
+    const selectedSymptoms = boxes
+      .filter((box) => selectedBoxIds.includes(box.id))
+      .map((box) => box.label)
+      .join(" ");
+  
+    const payload = {
+      symptom_input: selectedSymptoms || "no input was given. don't answer",
+      patient_id: userId,
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/education/gumloop", // Updated endpoint
+        payload
+      );
+      console.log("Response from backend:", response.data);
+      alert("Data successfully submitted to the backend!");
+    } catch (error) {
+      console.error("Error submitting data to the backend:", error);
+      alert("Failed to submit data. Please try again.");
+    }
   };
 
   return (
@@ -114,10 +133,10 @@ const App = () => {
             </button>
           </div>
 
-          {/* Integrating the visualization component */}
+          {/* Render the Queue Visualization Component */}
           <QueueStatusVisualization queueData={queueData} />
 
-          {/* Symptom selection boxes */}
+          {/* Symptom Selection Section */}
           <div className="symptoms-container">
             <h3>Choose Your Symptoms (Click to Highlight)</h3>
             <div className="symptoms-grid">
@@ -135,6 +154,7 @@ const App = () => {
               })}
             </div>
 
+            {/* Submit Button */}
             <button onClick={handleFinalSubmit} className="submit-button">
               Submit
             </button>
