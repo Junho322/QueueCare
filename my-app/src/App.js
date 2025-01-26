@@ -4,8 +4,10 @@ import "./App.css";
 import QueueStatusVisualization from "./QueueStatusVisualization"; // Import the visualization component
 
 const App = () => {
-  const [userId, setUserId] = useState("");
-  const [isUserIdSubmitted, setIsUserIdSubmitted] = useState(false);
+  const [userId, setUserId] = useState(() => sessionStorage.getItem("userId") || "");
+  const [isUserIdSubmitted, setIsUserIdSubmitted] = useState(
+    () => sessionStorage.getItem("isUserIdSubmitted") === "true"
+  );
   const [queueData, setQueueData] = useState(null);
 
   const boxes = [
@@ -32,11 +34,27 @@ const App = () => {
     }
   }, [isUserIdSubmitted, userId]);
 
+  // Save userId and isUserIdSubmitted to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem("userId", userId);
+  }, [userId]);
+
+  useEffect(() => {
+    sessionStorage.setItem("isUserIdSubmitted", isUserIdSubmitted);
+  }, [isUserIdSubmitted]);
+
   const handleUserIdSubmit = (event) => {
     event.preventDefault();
     if (userId.trim()) {
       setIsUserIdSubmitted(true);
     }
+  };
+
+  const handleReset = () => {
+    setUserId(""); // Clear the user ID
+    setIsUserIdSubmitted(false); // Reset submission state
+    sessionStorage.removeItem("userId"); // Clear sessionStorage for userId
+    sessionStorage.removeItem("isUserIdSubmitted"); // Clear sessionStorage for submission state
   };
 
   const handleBoxClick = (boxId) => {
@@ -118,6 +136,11 @@ const App = () => {
               Submit
             </button>
           </div>
+
+          {/* Reset Button */}
+          <button onClick={handleReset} className="reset-button">
+            Change ID
+          </button>
         </div>
       )}
     </div>
