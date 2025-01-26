@@ -128,7 +128,7 @@ body {
 .submit-button {
   display: block;
   width: 100%;
-  max-width: 300px;
+  max-width: 120px;
   margin: 20px auto;
   padding: 14px;
   background-color: var(--secondary-color);
@@ -138,6 +138,12 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s;
 }
+
+.changeID {
+  background-color: red;
+}
+
+
 
 .submit-button:active {
   transform: scale(0.98);

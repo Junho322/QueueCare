@@ -82,14 +82,37 @@ const App = () => {
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
             />
-            <button type="submit">Submit</button>
+            <button type="submit" className="submit-button">
+              Submit
+            </button>
           </form>
         </div>
       )}
 
       {isUserIdSubmitted && queueData && (
         <div className="queue-status">
-          <h2>Queue Status & Information</h2>
+          {/* Title and Change ID Button */}
+          <div
+            className="queue-header flex items-center justify-between w-full mb-6"
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <h2 className="text-2xl font-bold">Queue Status & Information</h2>
+            <button
+              onClick={handleReset}
+              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+              style={{
+                backgroundColor: "#ef4444", // Red background
+                color: "#fff", // White text
+                padding: "4px 12px", // Smaller padding
+                borderRadius: "4px", // Rounded corners
+                fontSize: "0.875rem", // Small font
+                border: "none", // Remove border
+                outline: "none", // Remove focus outline
+              }}
+            >
+              Change ID
+            </button>
+          </div>
 
           {/* Integrating the visualization component */}
           <QueueStatusVisualization queueData={queueData} />
@@ -116,11 +139,6 @@ const App = () => {
               Submit
             </button>
           </div>
-
-          {/* Reset Button */}
-          <button onClick={handleReset} className="reset-button">
-            Change ID
-          </button>
         </div>
       )}
     </div>
