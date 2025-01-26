@@ -1,9 +1,12 @@
 from routers.education_routes import generate_education_gumloop, SymptomInput
 
-# Simulate frontend input
-symptom_input = SymptomInput(symptom_input="headache, fever, chill, cough")
+# Simulate frontend input with symptom input and patient ID
+symptom_input = SymptomInput(
+    symptom_input="cancer",
+    patient_id=""  # Replace with a valid patient ID
+)
 
-# Call the function directly
+# Call the function directly and print the output
 try:
     result = generate_education_gumloop(symptom_input)
     print("Function Output:")
