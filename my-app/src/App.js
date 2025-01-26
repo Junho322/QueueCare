@@ -12,10 +12,26 @@ const App = () => {
   const [backendResponse, setBackendResponse] = useState(""); // State for backend response
 
   const boxes = [
-    { id: 1, label: "Symptom A" },
-    { id: 2, label: "Symptom B" },
-    { id: 3, label: "Symptom C" },
-    { id: 4, label: "Symptom D" },
+    { id: 1, label: "How much longer do I have to wait?" },
+    { id: 2, label: "What does my queue position mean?" },
+    { id: 3, label: "Can you explain what 'registered' means in my current phase?" },
+    { id: 4, label: "Why is my triage category marked as Yellow (Level III)?" },
+    { id: 5, label: "What determines when I will be seen by a doctor?" },
+    { id: 6, label: "Is there any way to speed up my turn?" },
+    { id: 7, label: "Can you suggest ways to manage anxiety while I wait?" },
+    { id: 8, label: "Is it safe for me to move around while waiting?" },
+    { id: 9, label: "Can I get some water or a snack while waiting?" },
+    { id: 10, label: "Can I listen to calming music or do breathing exercises to feel better?" },
+    { id: 11, label: "Can I leave the waiting area temporarily without losing my place in line?" },
+    { id: 12, label: "What happens if I need to step out for an emergency?" },
+    { id: 13, label: "Is there any paperwork I need to complete while waiting?" },
+    { id: 14, label: "Can I update my information or check-in again if needed?" },
+    { id: 15, label: "When will I know more about my condition?" },
+    { id: 16, label: "What kind of care can I expect for my triage category?" },
+    { id: 17, label: "Will I be informed if there’s a change in my triage priority?" },
+    { id: 18, label: "Can you guide me to the restroom or a comfortable seating area?" },
+    { id: 19, label: "Are there any amenities or support services I can use while waiting?" },
+    { id: 20, label: "What should I do if my condition worsens while waiting?" },
   ];
 
   const [selectedBoxIds, setSelectedBoxIds] = useState([]);
@@ -51,37 +67,33 @@ const App = () => {
   };
 
   const handleReset = () => {
-    setUserId(""); 
+    setUserId("");
     setIsUserIdSubmitted(false);
     sessionStorage.removeItem("userId");
     sessionStorage.removeItem("isUserIdSubmitted");
   };
 
   const handleBoxClick = (boxId) => {
-    setSelectedBoxIds((prev) =>
-      prev.includes(boxId)
-        ? prev.filter((id) => id !== boxId)
-        : [...prev, boxId]
-    );
-  };
+    setSelectedBoxIds((prev) => (prev.includes(boxId) ? [] : [boxId]));
+};
 
   const handleFinalSubmit = async () => {
-    const selectedSymptoms = boxes
+    const selectedQuestions = boxes
       .filter((box) => selectedBoxIds.includes(box.id))
       .map((box) => box.label)
       .join(" ");
-  
+
     const payload = {
-      symptom_input: selectedSymptoms || "no input was given. don't answer",
+      question_input: selectedQuestions || "no input was given. don't answer",
       patient_id: userId,
     };
-  
+
     try {
       const response = await axios.post(
         "http://localhost:8000/education/gumloop",
         payload
       );
-      const extractedResponse = response.data; // Ensure response contains only the extracted string
+      const extractedResponse = response.data;
       setBackendResponse(extractedResponse);
     } catch (error) {
       console.error("Error submitting data to the backend:", error);
@@ -118,15 +130,6 @@ const App = () => {
             <button
               onClick={handleReset}
               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-              style={{
-                backgroundColor: "#ef4444",
-                color: "#fff",
-                padding: "4px 12px",
-                borderRadius: "4px",
-                fontSize: "0.875rem",
-                border: "none",
-                outline: "none",
-              }}
             >
               Change ID
             </button>
@@ -134,27 +137,27 @@ const App = () => {
 
           <QueueStatusVisualization queueData={queueData} />
 
-          <div className="symptoms-container">
-            <h3>Choose Your Symptoms (Click to Highlight)</h3>
-            <div className="symptoms-grid">
-              {boxes.map((box) => {
-                const isSelected = selectedBoxIds.includes(box.id);
-                return (
-                  <div
-                    key={box.id}
-                    onClick={() => handleBoxClick(box.id)}
-                    className={`symptom-box ${isSelected ? "selected" : ""}`}
-                  >
-                    {box.label}
-                  </div>
-                );
-              })}
-            </div>
+          <div className="questions-container">
+  <h3>Choose Your Questions (Click to Highlight)</h3>
+  <div className="questions-grid">
+    {boxes.map((box) => {
+      const isSelected = selectedBoxIds.includes(box.id);
+      return (
+        <div
+          key={box.id}
+          onClick={() => handleBoxClick(box.id)}
+          className={`symptom-box ${isSelected ? "selected" : ""}`}
+        >
+          {box.label}
+        </div>
+      );
+    })}
+  </div>
 
-            <button onClick={handleFinalSubmit} className="submit-button">
-              Submit
-            </button>
-          </div>
+  <button onClick={handleFinalSubmit} className="submit-button">
+    Submit
+  </button>
+</div>
 
           {backendResponse && (
             <div className="response-section">
