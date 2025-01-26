@@ -9,6 +9,7 @@ const App = () => {
     () => sessionStorage.getItem("isUserIdSubmitted") === "true"
   );
   const [queueData, setQueueData] = useState(null);
+  const [backendResponse, setBackendResponse] = useState(""); // State for backend response
 
   const boxes = [
     { id: 1, label: "Symptom A" },
@@ -34,7 +35,6 @@ const App = () => {
     }
   }, [isUserIdSubmitted, userId]);
 
-  // Save userId and isUserIdSubmitted to sessionStorage whenever they change
   useEffect(() => {
     sessionStorage.setItem("userId", userId);
   }, [userId]);
@@ -51,10 +51,10 @@ const App = () => {
   };
 
   const handleReset = () => {
-    setUserId(""); // Clear the user ID
-    setIsUserIdSubmitted(false); // Reset submission state
-    sessionStorage.removeItem("userId"); // Clear sessionStorage for userId
-    sessionStorage.removeItem("isUserIdSubmitted"); // Clear sessionStorage for submission state
+    setUserId(""); 
+    setIsUserIdSubmitted(false);
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("isUserIdSubmitted");
   };
 
   const handleBoxClick = (boxId) => {
@@ -78,14 +78,14 @@ const App = () => {
   
     try {
       const response = await axios.post(
-        "http://localhost:8000/education/gumloop", // Updated endpoint
+        "http://localhost:8000/education/gumloop",
         payload
       );
-      console.log("Response from backend:", response.data);
-      alert("Data successfully submitted to the backend!");
+      const extractedResponse = response.data; // Ensure response contains only the extracted string
+      setBackendResponse(extractedResponse);
     } catch (error) {
       console.error("Error submitting data to the backend:", error);
-      alert("Failed to submit data. Please try again.");
+      setBackendResponse("Failed to retrieve data. Please try again.");
     }
   };
 
@@ -110,7 +110,6 @@ const App = () => {
 
       {isUserIdSubmitted && queueData && (
         <div className="queue-status">
-          {/* Title and Change ID Button */}
           <div
             className="queue-header flex items-center justify-between w-full mb-6"
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
@@ -120,23 +119,21 @@ const App = () => {
               onClick={handleReset}
               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
               style={{
-                backgroundColor: "#ef4444", // Red background
-                color: "#fff", // White text
-                padding: "4px 12px", // Smaller padding
-                borderRadius: "4px", // Rounded corners
-                fontSize: "0.875rem", // Small font
-                border: "none", // Remove border
-                outline: "none", // Remove focus outline
+                backgroundColor: "#ef4444",
+                color: "#fff",
+                padding: "4px 12px",
+                borderRadius: "4px",
+                fontSize: "0.875rem",
+                border: "none",
+                outline: "none",
               }}
             >
               Change ID
             </button>
           </div>
 
-          {/* Render the Queue Visualization Component */}
           <QueueStatusVisualization queueData={queueData} />
 
-          {/* Symptom Selection Section */}
           <div className="symptoms-container">
             <h3>Choose Your Symptoms (Click to Highlight)</h3>
             <div className="symptoms-grid">
@@ -154,11 +151,17 @@ const App = () => {
               })}
             </div>
 
-            {/* Submit Button */}
             <button onClick={handleFinalSubmit} className="submit-button">
               Submit
             </button>
           </div>
+
+          {backendResponse && (
+            <div className="response-section">
+              <h3>Response:</h3>
+              <p>{backendResponse}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
