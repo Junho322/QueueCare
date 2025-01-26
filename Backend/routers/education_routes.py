@@ -55,17 +55,6 @@ async def generate_education_gumloop(symptom_data: SymptomInput):
                 return_exceptions=True
             )
 
-            # Process patient details response
-            if symptom_data.patient_id:
-                patient_response = responses[0]
-                if isinstance(patient_response, httpx.Response):
-                    patient_response.raise_for_status()
-                    patient_details = patient_response.json()
-                else:
-                    raise HTTPException(status_code=500, detail="Error fetching patient details.")
-            else:
-                patient_details = {"message": "No patient_id provided."}
-
             # Process start pipeline response
             start_response = responses[1]
             if isinstance(start_response, httpx.Response):
@@ -88,11 +77,8 @@ async def generate_education_gumloop(symptom_data: SymptomInput):
                 state = run_status.get("state")
                 if state == "DONE":
                     outputs = run_status.get("outputs", {})
-                    return {
-                        "initial_response": pipeline_data,
-                        "patient_details": patient_details,
-                        "final_outputs": outputs
-                    }
+                    response_text = outputs.get("response", "No response available.")
+                    return response_text  # Return only the response string
                 elif state in {"FAILED", "TERMINATED"}:
                     raise HTTPException(status_code=500, detail=f"Pipeline ended with state: {state}")
 
