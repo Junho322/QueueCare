@@ -1,4 +1,4 @@
-**McHacks 2025 - Winning Project **
+# McHacks 2025 - Winning Project
 **QueueCare** by Jun Ho Oh, Jiwoong Choi, Shayan Yamanidouzi Sorkhabi, Danny Farkouh
 
 **Inspiration**
